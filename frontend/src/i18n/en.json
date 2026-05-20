@@ -1,0 +1,70 @@
+{
+  "app": {
+    "title": "adessoEventApp",
+    "tagline": "Your Events. Your Team."
+  },
+  "auth": {
+    "login": "Sign in with adesso account",
+    "logout": "Sign out"
+  },
+  "feed": {
+    "title": "Events",
+    "empty": "All caught up! Check back tomorrow 🎉",
+    "swipeRight": "Interested",
+    "swipeLeft": "Skip"
+  },
+  "event": {
+    "type": {
+      "SPORT": "Sport & Tournament",
+      "MEETING": "Meeting & Workshop",
+      "LEISURE": "Leisure & Teambuilding",
+      "TRAINING": "Training",
+      "COMPANY": "Company Event",
+      "OTHER": "Other"
+    },
+    "attendees": "Attendees",
+    "notes": "Notes",
+    "join": "Join",
+    "decline": "Skip"
+  },
+  "myEvents": {
+    "title": "My Events",
+    "upcoming": "Upcoming Events",
+    "past": "Past Events",
+    "empty": "No events saved yet. Start swiping!"
+  },
+  "createEvent": {
+    "title": "New Event",
+    "titleLabel": "Title",
+    "description": "Description",
+    "type": "Event Type",
+    "location": "Location",
+    "startDate": "Date & Time",
+    "maxAttendees": "Max. Attendees (optional)",
+    "notes": "Notes (optional)",
+    "image": "Upload Image",
+    "submit": "Publish",
+    "preview": "Preview"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "users": "User Management",
+    "locations": "Locations",
+    "events": "Moderate Events",
+    "search": "Search name or email..."
+  },
+  "nav": {
+    "feed": "Feed",
+    "myEvents": "My Events",
+    "settings": "Settings",
+    "profile": "Profile"
+  },
+  "profile": {
+    "title": "Profile & Settings",
+    "location": "My Location",
+    "language": "Language",
+    "aiOptIn": "AI Personalization",
+    "save": "Save Settings",
+    "saved": "Saved"
+  }
+}

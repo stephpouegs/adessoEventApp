@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.output/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.jira
+
+# Database
+*.db
+*.db-journal
+*.sqlite
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Playwright
+playwright-report/
+test-results/
+
+# Docs generated
+docs/screenshots/
+docs/*.pptx
+
+# Temp scripts
+list_projects.py
+check_boards.py
+check_issuetypes.py
+check_open_tickets.py
+add_*.py
+move_ticket.py
+close_ticket.py
+update_jira_status.py

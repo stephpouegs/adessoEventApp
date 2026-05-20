@@ -1,0 +1,70 @@
+{
+  "app": {
+    "title": "adessoEventApp",
+    "tagline": "Deine Events. Dein Team."
+  },
+  "auth": {
+    "login": "Mit adesso-Konto anmelden",
+    "logout": "Abmelden"
+  },
+  "feed": {
+    "title": "Events",
+    "empty": "Alles gecheckt! Schau morgen wieder vorbei 🎉",
+    "swipeRight": "Interesse",
+    "swipeLeft": "Ablehnen"
+  },
+  "event": {
+    "type": {
+      "SPORT": "Sport & Turnier",
+      "MEETING": "Meeting & Workshop",
+      "LEISURE": "Freizeit & Teambuilding",
+      "TRAINING": "Weiterbildung",
+      "COMPANY": "Firmenveranstaltung",
+      "OTHER": "Sonstiges"
+    },
+    "attendees": "Teilnehmer",
+    "notes": "Hinweise",
+    "join": "Mitmachen",
+    "decline": "Ablehnen"
+  },
+  "myEvents": {
+    "title": "Meine Events",
+    "upcoming": "Kommende Events",
+    "past": "Vergangene Events",
+    "empty": "Noch keine Events gemerkt. Jetzt swipen!"
+  },
+  "createEvent": {
+    "title": "Neues Event",
+    "titleLabel": "Titel",
+    "description": "Beschreibung",
+    "type": "Event-Typ",
+    "location": "Standort",
+    "startDate": "Datum & Uhrzeit",
+    "maxAttendees": "Max. Teilnehmer (optional)",
+    "notes": "Hinweise (optional)",
+    "image": "Bild hochladen",
+    "submit": "Veröffentlichen",
+    "preview": "Vorschau"
+  },
+  "admin": {
+    "title": "Admin-Panel",
+    "users": "Nutzerverwaltung",
+    "locations": "Standorte",
+    "events": "Events moderieren",
+    "search": "Name oder E-Mail suchen..."
+  },
+  "nav": {
+    "feed": "Feed",
+    "myEvents": "Meine Events",
+    "settings": "Einstellungen",
+    "profile": "Profil"
+  },
+  "profile": {
+    "title": "Profil & Einstellungen",
+    "location": "Mein Standort",
+    "language": "Sprache",
+    "aiOptIn": "KI-Personalisierung",
+    "save": "Einstellungen speichern",
+    "saved": "Gespeichert"
+  }
+}

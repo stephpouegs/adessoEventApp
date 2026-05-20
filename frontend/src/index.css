@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #F0F4F8;
+}
+
+#root {
+  width: 100%;
+  min-height: 100svh;
+}
+
+/* Feed-Container: korrekter Viewport für Mobile (URL-Leiste berücksichtigt) */
+.feed-container {
+  height: calc(100vh - 136px);
+  height: calc(100dvh - 136px);
+}
+
+/* Scrollbar für horizontale Chip-Leisten */
+.chips-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.chips-scroll::-webkit-scrollbar {
+  height: 3px;
+}
+.chips-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chips-scroll::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+}
