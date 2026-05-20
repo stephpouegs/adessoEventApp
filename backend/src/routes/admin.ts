@@ -22,7 +22,7 @@ router.put('/users/:id/role', authenticate, requireRole('ADMIN'), async (req: Au
   if (!parsed.success) return res.status(400).json({ errors: parsed.error.flatten() });
 
   const user = await prisma.user.update({
-    where: { id: req.params.id },
+    where: { id: req.params.id as string },
     data: { role: parsed.data.role },
   });
   return res.json(user);
@@ -51,7 +51,7 @@ router.post('/locations', authenticate, requireRole('ADMIN'), async (req: AuthRe
 // Standort bearbeiten
 router.put('/locations/:id', authenticate, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
   const location = await prisma.location.update({
-    where: { id: req.params.id },
+    where: { id: req.params.id as string },
     data: req.body,
   });
   return res.json(location);
@@ -59,7 +59,7 @@ router.put('/locations/:id', authenticate, requireRole('ADMIN'), async (req: Aut
 
 // Standort löschen
 router.delete('/locations/:id', authenticate, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
-  await prisma.location.delete({ where: { id: req.params.id } });
+  await prisma.location.delete({ where: { id: req.params.id as string } });
   return res.status(204).send();
 });
 

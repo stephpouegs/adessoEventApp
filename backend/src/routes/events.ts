@@ -72,8 +72,9 @@ router.get('/my', authenticate, async (req: AuthRequest, res: Response) => {
 
 // Event-Details
 router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
+  const id = req.params.id as string;
   const event = await prisma.event.findUnique({
-    where: { id: req.params.id },
+    where: { id },
     include: {
       location: true,
       organizer: { select: { name: true, email: true } },
@@ -101,7 +102,8 @@ router.post('/', authenticate, requireRole('ORGANIZER', 'ADMIN'), async (req: Au
 
 // Event bearbeiten
 router.put('/:id', authenticate, requireRole('ORGANIZER', 'ADMIN'), async (req: AuthRequest, res: Response) => {
-  const event = await prisma.event.findUnique({ where: { id: req.params.id } });
+  const id = req.params.id as string;
+  const event = await prisma.event.findUnique({ where: { id } });
   if (!event) return res.status(404).json({ message: 'Event not found' });
   if (event.organizerId !== req.user!.id && req.user!.role !== 'ADMIN') {
     return res.status(403).json({ message: 'Forbidden' });
@@ -110,18 +112,19 @@ router.put('/:id', authenticate, requireRole('ORGANIZER', 'ADMIN'), async (req: 
   const parsed = EventSchema.partial().safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ errors: parsed.error.flatten() });
 
-  const updated = await prisma.event.update({ where: { id: req.params.id }, data: parsed.data });
+  const updated = await prisma.event.update({ where: { id }, data: parsed.data });
   return res.json(updated);
 });
 
 // Event absagen (Admin oder Organisator)
 router.delete('/:id', authenticate, requireRole('ORGANIZER', 'ADMIN'), async (req: AuthRequest, res: Response) => {
-  const event = await prisma.event.findUnique({ where: { id: req.params.id } });
+  const id = req.params.id as string;
+  const event = await prisma.event.findUnique({ where: { id } });
   if (!event) return res.status(404).json({ message: 'Event not found' });
   if (event.organizerId !== req.user!.id && req.user!.role !== 'ADMIN') {
     return res.status(403).json({ message: 'Forbidden' });
   }
-  await prisma.event.update({ where: { id: req.params.id }, data: { status: 'CANCELLED' } });
+  await prisma.event.update({ where: { id }, data: { status: 'CANCELLED' } });
   return res.status(204).send();
 });
 
