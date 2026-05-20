@@ -45,7 +45,7 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
 });
 
 router.delete('/:eventId', authenticate, async (req: AuthRequest, res: Response) => {
-  const { eventId } = req.params;
+  const eventId = req.params.eventId as string;
   const userId = req.user!.id;
 
   await prisma.swipe.deleteMany({ where: { userId, eventId } });
