@@ -28,6 +28,8 @@ export function EventForm({ onSuccess, editEventId }: Props) {
   const [form, setForm] = useState({
     title: '', description: '', type: 'SPORT', locationId: user?.locationId ?? '',
     startDate: '', startTime: '', maxAttendees: '', notes: '',
+    audienceType: 'ALL' as 'ALL' | 'LOCATION' | 'BUSINESS_LINE' | 'CC' | 'SPECIFIC',
+    audienceValue: '',
   });
 
   useEffect(() => {
@@ -51,6 +53,8 @@ export function EventForm({ onSuccess, editEventId }: Props) {
         startTime: datetimeLocal.slice(11, 16),
         maxAttendees: e.maxAttendees ? String(e.maxAttendees) : '',
         notes: e.notes ?? '',
+        audienceType: e.audienceType ?? 'ALL',
+        audienceValue: e.audienceValue ?? '',
       });
       setFetching(false);
     });
@@ -61,10 +65,23 @@ export function EventForm({ onSuccess, editEventId }: Props) {
     setLoading(true);
     setError('');
     try {
+      // Build audienceValue: for LOCATION store JSON array, for others plain string
+      let audienceValue: string | undefined = undefined;
+      if (form.audienceType === 'LOCATION') {
+        const ids = form.audienceValue.split(',').map((s) => s.trim()).filter(Boolean);
+        audienceValue = ids.length ? JSON.stringify(ids) : undefined;
+      } else if (form.audienceType === 'SPECIFIC') {
+        const targets = form.audienceValue.split(/[\n,]/).map((s) => s.trim()).filter(Boolean);
+        audienceValue = targets.length ? JSON.stringify(targets) : undefined;
+      } else if (form.audienceType !== 'ALL') {
+        audienceValue = form.audienceValue.trim() || undefined;
+      }
+
       const payload = {
         ...form,
         startDate: new Date(`${form.startDate}T${form.startTime || '00:00'}`).toISOString(),
         maxAttendees: form.maxAttendees ? parseInt(form.maxAttendees) : undefined,
+        audienceValue,
       };
       if (isEdit) {
         await api.put(`/events/${editEventId}`, payload);
@@ -166,6 +183,73 @@ export function EventForm({ onSuccess, editEventId }: Props) {
           <option value="">Standort wählen...</option>
           {locations.map((l) => <option key={l.id} value={l.id}>{l.name} – {l.city}</option>)}
         </select>
+      </div>
+
+      <div>
+        <label className="text-sm font-medium text-gray-700 mb-2 block">Zielgruppe *</label>
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          {([
+            { value: 'ALL',           label: 'Alle adessi',        emoji: '🌍' },
+            { value: 'LOCATION',      label: 'Standort(e)',        emoji: '📍' },
+            { value: 'BUSINESS_LINE', label: 'Business Line',      emoji: '🏢' },
+            { value: 'CC',            label: 'Competence Center',  emoji: '🎓' },
+            { value: 'SPECIFIC',      label: 'Bestimmte adessi',   emoji: '👥' },
+          ] as const).map(({ value, label, emoji }) => (
+            <button key={value} type="button"
+              onClick={() => setForm({ ...form, audienceType: value, audienceValue: '' })}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-medium transition-all active:scale-95 ${
+                form.audienceType === value
+                  ? 'bg-[#0D3B6E] border-[#0D3B6E] text-white'
+                  : 'bg-white border-gray-200 text-gray-600 hover:border-[#0D3B6E]'
+              }`}
+            >
+              <span>{emoji}</span><span>{label}</span>
+            </button>
+          ))}
+        </div>
+
+        {form.audienceType === 'LOCATION' && (
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">Standorte auswählen</label>
+            <div className="space-y-1 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-2">
+              {locations.map((l) => {
+                const selected = form.audienceValue.split(',').map((s) => s.trim()).includes(l.id);
+                return (
+                  <label key={l.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-2 py-1">
+                    <input type="checkbox" checked={selected}
+                      onChange={() => {
+                        const ids = form.audienceValue.split(',').map((s) => s.trim()).filter(Boolean);
+                        const next = selected ? ids.filter((id) => id !== l.id) : [...ids, l.id];
+                        setForm({ ...form, audienceValue: next.join(',') });
+                      }}
+                      className="accent-[#0D3B6E]"
+                    />
+                    <span className="text-sm">{l.name} – {l.city}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {form.audienceType === 'BUSINESS_LINE' && (
+          <input className={inputClass} placeholder="z.B. Digital Experience" value={form.audienceValue}
+            onChange={(e) => setForm({ ...form, audienceValue: e.target.value })} />
+        )}
+
+        {form.audienceType === 'CC' && (
+          <input className={inputClass} placeholder="z.B. Cloud & Infrastructure" value={form.audienceValue}
+            onChange={(e) => setForm({ ...form, audienceValue: e.target.value })} />
+        )}
+
+        {form.audienceType === 'SPECIFIC' && (
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">E-Mails eingeben (eine pro Zeile oder kommagetrennt)</label>
+            <textarea rows={3} className={inputClass} placeholder="max.mustermann@adesso.de&#10;anna.schmidt@adesso.de"
+              value={form.audienceValue}
+              onChange={(e) => setForm({ ...form, audienceValue: e.target.value })} />
+          </div>
+        )}
       </div>
 
       <div>

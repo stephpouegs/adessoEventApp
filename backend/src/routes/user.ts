@@ -23,6 +23,8 @@ router.put('/settings', authenticate, async (req: AuthRequest, res: Response) =>
     language: z.enum(['DE', 'EN']).optional(),
     aiOptIn: z.boolean().optional(),
     locationId: z.string().min(1).optional(),
+    businessLine: z.string().optional(),
+    competenceCenter: z.string().optional(),
   });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ errors: parsed.error.flatten() });

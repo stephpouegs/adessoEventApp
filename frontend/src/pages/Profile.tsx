@@ -19,6 +19,8 @@ export function Profile() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [aiOptIn, setAiOptIn] = useState(true);
+  const [businessLine, setBusinessLine] = useState((user as any)?.businessLine ?? '');
+  const [competenceCenter, setCompetenceCenter] = useState((user as any)?.competenceCenter ?? '');
 
   useEffect(() => {
     api.get('/admin/locations').then((r) => setLocations(r.data));
@@ -32,7 +34,7 @@ export function Profile() {
     try {
       await Promise.all([
         api.put('/user/location', { locationId: selectedLoc }),
-        api.put('/user/settings', { language: i18n.language, aiOptIn }),
+        api.put('/user/settings', { language: i18n.language, aiOptIn, businessLine, competenceCenter }),
       ]);
       setUser({ ...user, locationId: selectedLoc });
       setSaved(true);
@@ -81,6 +83,30 @@ export function Profile() {
             <option key={l.id} value={l.id}>{l.name} – {l.city}</option>
           ))}
         </select>
+      </div>
+
+      {/* Business Line & CC */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">
+        <h2 className="font-semibold text-gray-800">Organisationseinheit</h2>
+        <p className="text-xs text-gray-500">Wird verwendet, um relevante Events für deine Business Line oder dein Competence Center anzuzeigen.</p>
+        <div>
+          <label className="text-xs font-medium text-gray-600 mb-1 block">🏢 Business Line</label>
+          <input
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B6E]"
+            placeholder="z.B. Digital Experience"
+            value={businessLine}
+            onChange={(e) => setBusinessLine(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-gray-600 mb-1 block">🎓 Competence Center</label>
+          <input
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B6E]"
+            placeholder="z.B. Cloud & Infrastructure"
+            value={competenceCenter}
+            onChange={(e) => setCompetenceCenter(e.target.value)}
+          />
+        </div>
       </div>
 
       {/* Sprache */}

@@ -8,14 +8,16 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  name        String
-  role        String   @default("USER")
-  locationId  String?
-  language    String   @default("DE")
-  aiOptIn     Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id                String   @id @default(uuid())
+  email             String   @unique
+  name              String
+  role              String   @default("USER")
+  locationId        String?
+  language          String   @default("DE")
+  aiOptIn           Boolean  @default(true)
+  businessLine      String?
+  competenceCenter  String?
+  createdAt         DateTime @default(now())
 
   location    Location?    @relation(fields: [locationId], references: [id])
   events      Event[]      @relation("OrganizerEvents")
@@ -43,11 +45,13 @@ model Event {
   organizerId  String
   startDate    DateTime
   endDate      DateTime?
-  imageUrl     String?
-  maxAttendees Int?
-  notes        String?
-  status       String    @default("ACTIVE")
-  createdAt    DateTime  @default(now())
+  imageUrl      String?
+  maxAttendees  Int?
+  notes         String?
+  status        String    @default("ACTIVE")
+  audienceType  String    @default("ALL")
+  audienceValue String?
+  createdAt     DateTime  @default(now())
 
   location    Location     @relation(fields: [locationId], references: [id])
   organizer   User         @relation("OrganizerEvents", fields: [organizerId], references: [id])
