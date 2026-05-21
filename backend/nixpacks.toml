@@ -11,4 +11,4 @@ cmds = [
 ]
 
 [start]
-cmd = "npx prisma migrate deploy --schema=src/prisma/schema.prisma && node dist/index.js"
+cmd = "node dist/index.js"
