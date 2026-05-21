@@ -171,7 +171,6 @@ export function EventForm({ onSuccess, editEventId }: Props) {
           />
         </div>
       </div>
-      </div>
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">{t('createEvent.location')} *</label>
