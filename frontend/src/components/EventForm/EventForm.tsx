@@ -153,7 +153,7 @@ export function EventForm({ onSuccess, editEventId }: Props) {
 
       <div className="flex gap-3">
         <div className="flex-1 min-w-0">
-          <label className="text-sm font-medium text-gray-700 mb-1 block">{t('createEvent.startDate')} *</label>
+          <label className="text-sm font-medium text-gray-700 mb-1 block">Datum *</label>
           <input
             required
             type="date"
