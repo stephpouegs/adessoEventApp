@@ -151,13 +151,13 @@ export function EventForm({ onSuccess, editEventId }: Props) {
         </div>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 items-end">
         <div className="flex-1 min-w-0">
           <label className="text-sm font-medium text-gray-700 mb-1 block">Datum *</label>
           <input
             required
             type="date"
-            className={inputClass}
+            className={`${inputClass} h-11`}
             value={form.startDate}
             onChange={(e) => setForm({ ...form, startDate: e.target.value })}
           />
@@ -167,7 +167,7 @@ export function EventForm({ onSuccess, editEventId }: Props) {
           <input
             required
             type="time"
-            className={inputClass}
+            className={`${inputClass} h-11`}
             value={form.startTime}
             onChange={(e) => setForm({ ...form, startTime: e.target.value })}
           />
