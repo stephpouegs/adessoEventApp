@@ -151,29 +151,26 @@ export function EventForm({ onSuccess, editEventId }: Props) {
         </div>
       </div>
 
-      <div>
-        <label className="text-sm font-medium text-gray-700 mb-1 block">{t('createEvent.startDate')} *</label>
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">📅</span>
-            <input
-              required
-              type="date"
-              className={`${inputClass} pl-9`}
-              value={form.startDate}
-              onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-            />
-          </div>
-          <div className="w-32 relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">🕐</span>
-            <input
-              required
-              type="time"
-              className={`${inputClass} pl-9`}
-              value={form.startTime}
-              onChange={(e) => setForm({ ...form, startTime: e.target.value })}
-            />
-          </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1 block">{t('createEvent.startDate')} *</label>
+          <input
+            required
+            type="date"
+            className={inputClass}
+            value={form.startDate}
+            onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1 block">Uhrzeit *</label>
+          <input
+            required
+            type="time"
+            className={inputClass}
+            value={form.startTime}
+            onChange={(e) => setForm({ ...form, startTime: e.target.value })}
+          />
         </div>
       </div>
 
