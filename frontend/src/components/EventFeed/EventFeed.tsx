@@ -68,7 +68,7 @@ export function EventFeed() {
     setEvents(type ? allEvents.filter((e) => e.type === type) : allEvents);
   };
 
-  const showToast = (message: string, type: 'success' | 'decline') => {
+  const showToast = (message: string, type: 'success' | 'decline' | 'waitlist') => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 2500);

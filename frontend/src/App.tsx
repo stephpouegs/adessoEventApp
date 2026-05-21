@@ -4,7 +4,6 @@ import { useAuthStore } from './store/auth';
 import api from './api/client';
 import { EventFeed } from './components/EventFeed/EventFeed';
 import { MyEvents } from './pages/MyEvents';
-import { EventForm } from './components/EventForm/EventForm';
 import { AdminPanel } from './components/AdminPanel/AdminPanel';
 import { LocationPicker } from './components/Onboarding/LocationPicker';
 import { Profile } from './pages/Profile';
