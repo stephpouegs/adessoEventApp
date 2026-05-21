@@ -14,6 +14,7 @@ async function main() {
     prisma.location.upsert({ where: { id: 'loc-muenchen' }, update: {}, create: { id: 'loc-muenchen', name: 'adesso München', city: 'München', address: 'Maximilianstraße 12, 80539 München', active: true } }),
     prisma.location.upsert({ where: { id: 'loc-frankfurt' }, update: {}, create: { id: 'loc-frankfurt', name: 'adesso Frankfurt', city: 'Frankfurt', address: 'Mainzer Landstraße 50, 60325 Frankfurt', active: true } }),
     prisma.location.upsert({ where: { id: 'loc-koeln' }, update: {}, create: { id: 'loc-koeln', name: 'adesso Köln', city: 'Köln', address: 'Augustinerstraße 1, 50667 Köln', active: true } }),
+    prisma.location.upsert({ where: { id: 'loc-muenster' }, update: {}, create: { id: 'loc-muenster', name: 'adesso Münster', city: 'Münster', address: 'Hafenweg 24, 48155 Münster', active: true } }),
   ]);
   console.log(`   ✅ ${locations.length} Standorte erstellt\n`);
 
@@ -106,6 +107,22 @@ async function main() {
       id: 'evt-12', title: 'Design Thinking Workshop', description: 'Lerne die Design Thinking Methode kennen und wende sie auf echte Projektprobleme an. Moderiert von unserem Innovation Lab.',
       type: 'TRAINING', locationId: 'loc-dortmund', startDate: d(12, 9), endDate: d(12, 17), maxAttendees: 18, notes: 'Für alle Rollen geeignet',
     },
+    {
+      id: 'evt-13', title: 'Lauftruppe Münster', description: 'Gemeinsam durch Münsters schöne Altstadt und den Aasee laufen! Offen für alle Fitness-Level, Tempo wird angepasst.',
+      type: 'SPORT', locationId: 'loc-muenster', startDate: d(2, 7), endDate: d(2, 8), maxAttendees: 20, notes: 'Laufschuhe mitbringen',
+    },
+    {
+      id: 'evt-14', title: 'Fitnessraum Session', description: 'Nutzung des Fitnessraums im Münsteraner Büro. Gemeinsames Training mit optionaler Anleitung durch erfahrene Kollegen.',
+      type: 'SPORT', locationId: 'loc-muenster', startDate: d(4, 7), endDate: d(4, 8), maxAttendees: 10, notes: 'Sportkleidung und Handtuch mitbringen',
+    },
+    {
+      id: 'evt-15', title: 'Mitarbeiterfrühstück Münster', description: 'Gemeinsames Frühstück im Büro Münster! Brötchen, Aufschnitt und gute Gespräche — perfekter Start in den Tag.',
+      type: 'COMPANY', locationId: 'loc-muenster', startDate: d(5, 8), endDate: d(5, 10), maxAttendees: 30, notes: null,
+    },
+    {
+      id: 'evt-16', title: 'Gaming Abend Münster', description: 'Entspannter Gaming-Abend mit Konsolen, Brett- und Kartenspielen. Bring dein Lieblingsspiel mit!',
+      type: 'LEISURE', locationId: 'loc-muenster', startDate: d(8, 18), endDate: d(8, 22), maxAttendees: 15, notes: 'Eigene Spiele/Controller willkommen',
+    },
   ];
 
   for (const evt of events) {
@@ -115,7 +132,7 @@ async function main() {
       create: { ...evt, organizerId: organizer.id, status: 'ACTIVE' },
     });
   }
-  console.log(`   ✅ ${events.length} Events erstellt\n`);
+  console.log(`   ✅ ${events.length} Events erstellt (inkl. 4 Münster)\n`);
 
   // ─── Beispiel-Swipes für Demo-User ────────────────────────────
   console.log('👆 Erstelle Beispiel-Swipes für Demo User...');

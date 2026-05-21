@@ -19,8 +19,9 @@ async function main() {
     prisma.location.create({ data: { id: 'loc-muenchen', name: 'adesso München', city: 'München', address: 'Maximilianstraße 12, 80539 München' } }),
     prisma.location.create({ data: { id: 'loc-frankfurt', name: 'adesso Frankfurt', city: 'Frankfurt', address: 'Mainzer Landstraße 50, 60325 Frankfurt' } }),
     prisma.location.create({ data: { id: 'loc-koeln', name: 'adesso Köln', city: 'Köln', address: 'Augustinerstraße 1, 50667 Köln' } }),
+    prisma.location.create({ data: { id: 'loc-muenster', name: 'adesso Münster', city: 'Münster', address: 'Hafenweg 24, 48155 Münster' } }),
   ]);
-  console.log('   ✅ 6 Standorte\n');
+  console.log('   ✅ 7 Standorte\n');
 
   console.log('👤 Erstelle Nutzer...');
   await prisma.user.create({ data: { id: 'user-admin', email: 'admin@adesso.de', name: 'Admin adesso', role: 'ADMIN', locationId: 'loc-dortmund' } });
@@ -45,12 +46,16 @@ async function main() {
     { id: 'evt-10', title: 'Weihnachtsfeier Frankfurt', description: 'Die Weihnachtsfeier des Frankfurter Teams! Festliches Dinner, Tombola und Musik.', type: 'COMPANY', locationId: 'loc-frankfurt', startDate: d(45, 19), endDate: d(45, 23), maxAttendees: 80 },
     { id: 'evt-11', title: 'Kicker-Turnier Köln', description: 'Unser Kicker-Turnier im Kölner Büro! Teams aus je 2 Personen.', type: 'SPORT', locationId: 'loc-koeln', startDate: d(6, 16), endDate: d(6, 19), maxAttendees: 24 },
     { id: 'evt-12', title: 'Design Thinking Workshop', description: 'Lerne die Design Thinking Methode kennen, moderiert von unserem Innovation Lab.', type: 'TRAINING', locationId: 'loc-dortmund', startDate: d(12, 9), endDate: d(12, 17), maxAttendees: 18 },
+    { id: 'evt-13', title: 'Lauftruppe Münster', description: 'Gemeinsam durch Münsters schöne Altstadt und den Aasee laufen! Offen für alle Fitness-Level, Tempo wird angepasst.', type: 'SPORT', locationId: 'loc-muenster', startDate: d(2, 7), endDate: d(2, 8), maxAttendees: 20 },
+    { id: 'evt-14', title: 'Fitnessraum Session', description: 'Nutzung des Fitnessraums im Münsteraner Büro. Gemeinsames Training mit optionaler Anleitung durch erfahrene Kollegen.', type: 'SPORT', locationId: 'loc-muenster', startDate: d(4, 7), endDate: d(4, 8), maxAttendees: 10 },
+    { id: 'evt-15', title: 'Mitarbeiterfrühstück Münster', description: 'Gemeinsames Frühstück im Büro Münster! Brötchen, Aufschnitt und gute Gespräche — perfekter Start in den Tag.', type: 'COMPANY', locationId: 'loc-muenster', startDate: d(5, 8), endDate: d(5, 10), maxAttendees: 30 },
+    { id: 'evt-16', title: 'Gaming Abend Münster', description: 'Entspannter Gaming-Abend mit Konsolen, Brett- und Kartenspielen. Bring dein Lieblingsspiel mit!', type: 'LEISURE', locationId: 'loc-muenster', startDate: d(8, 18), endDate: d(8, 22), maxAttendees: 15 },
   ];
 
   for (const evt of events) {
     await prisma.event.create({ data: { ...evt, organizerId: 'user-organizer', status: 'ACTIVE' } });
   }
-  console.log(`   ✅ ${events.length} Events\n`);
+  console.log(`   ✅ ${events.length} Events (inkl. 4 Münster)\n`);
 
   console.log('✅ Reset abgeschlossen!\n');
   console.log('─────────────────────────────────');
