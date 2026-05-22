@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { authenticate, AuthRequest } from '../middleware/auth';
+import { addToCalendar, removeFromCalendar } from '../services/calendarService';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -27,17 +28,34 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
   let attendanceStatus: string | null = null;
 
   if (direction === 'RIGHT') {
-    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      include: { location: true },
+    });
     const attendanceCount = await prisma.attendance.count({ where: { eventId, status: 'CONFIRMED' } });
     attendanceStatus =
       event?.maxAttendees && attendanceCount >= event.maxAttendees ? 'WAITLIST' : 'CONFIRMED';
 
+    // Try to add to Outlook calendar (best-effort, doesn't block the swipe)
+    let calendarEventId: string | null = null;
+    if (event) {
+      calendarEventId = await addToCalendar(userId, event as any);
+    }
+
     await prisma.attendance.upsert({
       where: { userId_eventId: { userId, eventId } },
-      update: { status: attendanceStatus },
-      create: { userId, eventId, status: attendanceStatus },
+      update: { status: attendanceStatus, calendarEventId },
+      create: { userId, eventId, status: attendanceStatus, calendarEventId },
     });
   } else {
+    // Remove from Outlook calendar if connected
+    const existing = await prisma.attendance.findUnique({
+      where: { userId_eventId: { userId, eventId } },
+      select: { calendarEventId: true },
+    });
+    if (existing?.calendarEventId) {
+      await removeFromCalendar(userId, existing.calendarEventId);
+    }
     await prisma.attendance.deleteMany({ where: { userId, eventId } });
   }
 
@@ -47,6 +65,14 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
 router.delete('/:eventId', authenticate, async (req: AuthRequest, res: Response) => {
   const eventId = req.params.eventId as string;
   const userId = req.user!.id;
+
+  const existing = await prisma.attendance.findUnique({
+    where: { userId_eventId: { userId, eventId } },
+    select: { calendarEventId: true },
+  });
+  if (existing?.calendarEventId) {
+    await removeFromCalendar(userId, existing.calendarEventId);
+  }
 
   await prisma.swipe.deleteMany({ where: { userId, eventId } });
   await prisma.attendance.deleteMany({ where: { userId, eventId } });

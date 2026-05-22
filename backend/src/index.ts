@@ -14,6 +14,7 @@ import swipeRoutes from './routes/swipe';
 import attendanceRoutes from './routes/attendance';
 import adminRoutes from './routes/admin';
 import userRoutes from './routes/user';
+import microsoftRoutes from './routes/microsoft';
 
 const prisma = new PrismaClient();
 
@@ -30,6 +31,7 @@ app.use('/api/swipe', swipeRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/microsoft', microsoftRoutes);
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 

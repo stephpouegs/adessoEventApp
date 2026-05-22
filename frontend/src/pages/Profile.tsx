@@ -13,7 +13,7 @@ const ROLE_LABEL: Record<string, { label: string; color: string }> = {
 
 export function Profile() {
   const { i18n } = useTranslation();
-  const { user, setUser } = useAuthStore();
+  const { user, setUser, token } = useAuthStore();
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectedLoc, setSelectedLoc] = useState(user?.locationId ?? '');
   const [saving, setSaving] = useState(false);
@@ -21,10 +21,49 @@ export function Profile() {
   const [aiOptIn, setAiOptIn] = useState(true);
   const [businessLine, setBusinessLine] = useState((user as any)?.businessLine ?? '');
   const [competenceCenter, setCompetenceCenter] = useState((user as any)?.competenceCenter ?? '');
+  const [msConnected, setMsConnected] = useState(false);
+  const [msDisconnecting, setMsDisconnecting] = useState(false);
+  const [msNotice, setMsNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     api.get('/admin/locations').then((r) => setLocations(r.data));
+    api.get('/microsoft/status').then((r) => setMsConnected(r.data.connected)).catch(() => {});
   }, []);
+
+  // Handle redirect back from Microsoft OAuth (params in URL after callback)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const msConnectedParam = params.get('ms_connected');
+    const msErrorParam = params.get('ms_error');
+
+    if (msConnectedParam === 'true') {
+      setMsConnected(true);
+      setMsNotice({ type: 'success', text: 'Microsoft-Konto erfolgreich verbunden. Events werden ab jetzt automatisch in deinen Outlook-Kalender eingetragen.' });
+      window.history.replaceState({}, '', window.location.pathname);
+      setTimeout(() => setMsNotice(null), 6000);
+    } else if (msErrorParam) {
+      setMsNotice({ type: 'error', text: 'Verbindung mit Microsoft fehlgeschlagen. Bitte versuche es erneut.' });
+      window.history.replaceState({}, '', window.location.pathname);
+      setTimeout(() => setMsNotice(null), 6000);
+    }
+  }, []);
+
+  const connectMicrosoft = () => {
+    const apiBase = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api';
+    window.location.href = `${apiBase}/microsoft/connect?token=${encodeURIComponent(token ?? '')}`;
+  };
+
+  const disconnectMicrosoft = async () => {
+    setMsDisconnecting(true);
+    try {
+      await api.delete('/microsoft/disconnect');
+      setMsConnected(false);
+      setMsNotice({ type: 'success', text: 'Microsoft-Konto getrennt.' });
+      setTimeout(() => setMsNotice(null), 3000);
+    } finally {
+      setMsDisconnecting(false);
+    }
+  };
 
   const currentLocation = locations.find((l) => l.id === selectedLoc);
 
@@ -148,6 +187,57 @@ export function Profile() {
             />
           </button>
         </div>
+      </div>
+
+      {/* Microsoft / Outlook-Kalender */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="10" height="10" fill="#F25022"/>
+            <rect x="12" y="1" width="10" height="10" fill="#7FBA00"/>
+            <rect x="1" y="12" width="10" height="10" fill="#00A4EF"/>
+            <rect x="12" y="12" width="10" height="10" fill="#FFB900"/>
+          </svg>
+          <h2 className="font-semibold text-gray-800">Microsoft Outlook-Kalender</h2>
+        </div>
+        <p className="text-xs text-gray-500">
+          Events, denen du per Swipe-Right zusagst, werden automatisch in deinen Outlook-Kalender eingetragen.
+        </p>
+
+        {msNotice && (
+          <div className={`text-xs rounded-lg px-3 py-2 ${msNotice.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+            {msNotice.text}
+          </div>
+        )}
+
+        {msConnected ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 rounded-lg px-3 py-2">
+              <span className="text-green-500">✓</span>
+              <span className="font-medium">Mit Microsoft verbunden</span>
+            </div>
+            <button
+              onClick={disconnectMicrosoft}
+              disabled={msDisconnecting}
+              className="w-full border border-gray-300 text-gray-600 text-sm font-medium py-2 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              {msDisconnecting ? '...' : 'Verbindung trennen'}
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={connectMicrosoft}
+            className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 text-sm font-medium py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="10" height="10" fill="#F25022"/>
+              <rect x="12" y="1" width="10" height="10" fill="#7FBA00"/>
+              <rect x="1" y="12" width="10" height="10" fill="#00A4EF"/>
+              <rect x="12" y="12" width="10" height="10" fill="#FFB900"/>
+            </svg>
+            Mit Microsoft verbinden
+          </button>
+        )}
       </div>
 
       {/* Speichern */}

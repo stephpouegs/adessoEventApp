@@ -8,16 +8,19 @@ datasource db {
 }
 
 model User {
-  id                String   @id @default(uuid())
-  email             String   @unique
+  id                String    @id @default(uuid())
+  email             String    @unique
   name              String
-  role              String   @default("USER")
+  role              String    @default("USER")
   locationId        String?
-  language          String   @default("DE")
-  aiOptIn           Boolean  @default(true)
+  language          String    @default("DE")
+  aiOptIn           Boolean   @default(true)
   businessLine      String?
   competenceCenter  String?
-  createdAt         DateTime @default(now())
+  msAccessToken     String?
+  msRefreshToken    String?
+  msTokenExpiry     DateTime?
+  createdAt         DateTime  @default(now())
 
   location    Location?    @relation(fields: [locationId], references: [id])
   events      Event[]      @relation("OrganizerEvents")
@@ -75,11 +78,12 @@ model Swipe {
 }
 
 model Attendance {
-  id           String   @id @default(uuid())
-  userId       String
-  eventId      String
-  status       String   @default("CONFIRMED")
-  registeredAt DateTime @default(now())
+  id              String   @id @default(uuid())
+  userId          String
+  eventId         String
+  status          String   @default("CONFIRMED")
+  calendarEventId String?
+  registeredAt    DateTime @default(now())
 
   user  User  @relation(fields: [userId], references: [id])
   event Event @relation(fields: [eventId], references: [id])
