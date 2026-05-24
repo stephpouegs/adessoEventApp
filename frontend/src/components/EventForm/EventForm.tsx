@@ -228,12 +228,12 @@ export function EventForm({ onSuccess, editEventId }: Props) {
         )}
 
         {form.audienceType === 'BUSINESS_LINE' && (
-          <input className={inputClass} placeholder="z.B. Digital Experience" value={form.audienceValue}
+          <input className={inputClass} placeholder="z.B. Cross Industries" value={form.audienceValue}
             onChange={(e) => setForm({ ...form, audienceValue: e.target.value })} />
         )}
 
         {form.audienceType === 'CC' && (
-          <input className={inputClass} placeholder="z.B. Cloud & Infrastructure" value={form.audienceValue}
+          <input className={inputClass} placeholder="z.B. Digi Berlin 2" value={form.audienceValue}
             onChange={(e) => setForm({ ...form, audienceValue: e.target.value })} />
         )}
 

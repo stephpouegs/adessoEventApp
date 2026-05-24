@@ -230,8 +230,8 @@ TEST_CASES = [
             "*Testfall:* TC-007\n*User Story:* US-005 (AAPE-107)\n*Typ:* Automatisiert\n\n"
             "*Vorbedingungen:*\n- JWT von demo@adesso.de\n\n"
             "*Schritte:*\n"
-            "1. PUT /api/user/settings { businessLine: 'Digital Experience', competenceCenter: 'Cloud & Infrastructure' }\n\n"
-            "*Erwartetes Ergebnis:*\n- HTTP 200\n- user.businessLine = 'Digital Experience'\n- user.competenceCenter = 'Cloud & Infrastructure'"
+            "1. PUT /api/user/settings { businessLine: 'Cross Industries', competenceCenter: 'Digi Berlin 2' }\n\n"
+            "*Erwartetes Ergebnis:*\n- HTTP 200\n- user.businessLine = 'Cross Industries'\n- user.competenceCenter = 'Digi Berlin 2'"
         ),
     },
 
@@ -394,9 +394,9 @@ TEST_CASES = [
         "labels": ["test", "events", "targeting", "automatisiert"],
         "description": (
             "*Testfall:* TC-207\n*User Story:* US-204 (AAPE-106)\n*Typ:* Automatisiert\n\n"
-            "*Vorbedingungen:*\n- Nutzer mit businessLine='Digital Experience' in DB\n- Event mit audienceType=BUSINESS_LINE, audienceValue='Digital Experience'\n\n"
+            "*Vorbedingungen:*\n- Nutzer mit businessLine='Cross Industries' in DB\n- Event mit audienceType=BUSINESS_LINE, audienceValue='Cross Industries'\n\n"
             "*Schritte:*\n"
-            "1. Nutzer-BL auf 'Digital Experience' setzen (PUT /user/settings)\n"
+            "1. Nutzer-BL auf 'Cross Industries' setzen (PUT /user/settings)\n"
             "2. GET /api/events/feed → pruefen ob BL-Event im Feed erscheint\n"
             "3. BL auf leeren String setzen → pruefen ob Event verschwindet\n\n"
             "*Erwartetes Ergebnis:*\n- Event nur sichtbar wenn BL uebereinstimmt"
@@ -697,9 +697,9 @@ def run_api_tests():
 
     # TC-007: Business Line & CC
     s, d = app_req("PUT", "/user/settings",
-                   {"businessLine": "Digital Experience", "competenceCenter": "Cloud & Infrastructure"},
+                   {"businessLine": "Cross Industries", "competenceCenter": "Digi Berlin 2"},
                    token=token_demo)
-    check("TC-007", s == 200 and d.get("businessLine") == "Digital Experience",
+    check("TC-007", s == 200 and d.get("businessLine") == "Cross Industries",
           f"PUT /user/settings BL/CC → {s}, BL={d.get('businessLine')}")
 
     print("\n[Feed & Swipe]")
