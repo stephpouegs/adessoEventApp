@@ -65,6 +65,68 @@ async function getValidToken(userId: string): Promise<string | null> {
   }
 }
 
+// Create a Teams meeting in the organizer's calendar with all attendees.
+// Attendees receive a calendar invite automatically (Teams/Outlook standard behavior).
+// Returns the Graph event ID to store on the adesso Event for later cancellation.
+export async function createTeamsMeeting(
+  organizerId: string,
+  event: EventData,
+  attendeeEmails: string[],
+): Promise<string | null> {
+  const token = await getValidToken(organizerId);
+  if (!token) return null;
+
+  const locationName = event.location
+    ? `${event.location.name} – ${event.location.city}`
+    : 'adesso';
+
+  const endDate = event.endDate ?? new Date(new Date(event.startDate).getTime() + 60 * 60 * 1000);
+
+  const body = {
+    subject: event.title,
+    body: { contentType: 'text', content: event.description },
+    start: { dateTime: new Date(event.startDate).toISOString(), timeZone: 'Europe/Berlin' },
+    end:   { dateTime: new Date(endDate).toISOString(),         timeZone: 'Europe/Berlin' },
+    location: { displayName: locationName },
+    categories: ['adesso Event'],
+    attendees: attendeeEmails.map((email) => ({
+      emailAddress: { address: email },
+      type: 'required',
+    })),
+  };
+
+  try {
+    const resp = await fetch(GRAPH_EVENTS_URL, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!resp.ok) {
+      console.error('createTeamsMeeting failed:', await resp.text());
+      return null;
+    }
+    const data = (await resp.json()) as any;
+    return data.id as string;
+  } catch {
+    return null;
+  }
+}
+
+// Cancel a Teams meeting previously created by createTeamsMeeting.
+// Deletes the organizer's calendar event, which sends cancellation notices to all attendees.
+export async function cancelTeamsMeeting(organizerId: string, msEventId: string): Promise<void> {
+  const token = await getValidToken(organizerId);
+  if (!token) return;
+  try {
+    await fetch(`${GRAPH_EVENTS_URL}/${msEventId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    // best-effort
+  }
+}
+
 export async function addToCalendar(userId: string, event: EventData): Promise<string | null> {
   const token = await getValidToken(userId);
   if (!token) return null;

@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { authenticate, requireRole, AuthRequest } from '../middleware/auth';
 import { scoreFeed } from '../services/recommendation';
+import { createTeamsMeeting, cancelTeamsMeeting } from '../services/calendarService';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -70,13 +71,13 @@ router.get('/feed', authenticate, async (req: AuthRequest, res: Response) => {
         audienceType: 'ALL',
         ...(effectiveLocationId ? { locationId: effectiveLocationId } : {}),
       },
-      include: { location: true, organizer: { select: { name: true } } },
+      include: { location: true, organizer: { select: { name: true } }, _count: { select: { attendances: true } } },
       orderBy: { createdAt: 'desc' },
       take: 30,
     }),
     prisma.event.findMany({
       where: { ...baseWhere, audienceType: { not: 'ALL' } },
-      include: { location: true, organizer: { select: { name: true } } },
+      include: { location: true, organizer: { select: { name: true } }, _count: { select: { attendances: true } } },
       orderBy: { createdAt: 'desc' },
     }),
   ]);
@@ -142,7 +143,19 @@ router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   return res.json(event);
 });
 
-// Event erstellen (Organisator)
+// Resolve audienceValue (mix of user IDs and email strings) to plain email addresses
+async function resolveAttendeeEmails(audienceValue: string): Promise<string[]> {
+  const raw: string[] = JSON.parse(audienceValue);
+  const ids    = raw.filter((v) => !v.includes('@'));
+  const emails = raw.filter((v) =>  v.includes('@')).map((e) => e.toLowerCase());
+  if (ids.length > 0) {
+    const users = await prisma.user.findMany({ where: { id: { in: ids } }, select: { email: true } });
+    emails.push(...users.map((u) => u.email.toLowerCase()));
+  }
+  return [...new Set(emails)];
+}
+
+// Event erstellen (Organisator + Admin)
 router.post('/', authenticate, requireRole('ORGANIZER', 'ADMIN'), async (req: AuthRequest, res: Response) => {
   const parsed = EventSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ errors: parsed.error.flatten() });
@@ -153,14 +166,29 @@ router.post('/', authenticate, requireRole('ORGANIZER', 'ADMIN'), async (req: Au
 
   const event = await prisma.event.create({
     data: { ...parsed.data, organizerId: req.user!.id },
+    include: { location: true },
   });
+
+  // App → Teams: create meeting with invited attendees
+  if (event.audienceType === 'SPECIFIC' && event.audienceValue) {
+    resolveAttendeeEmails(event.audienceValue).then(async (emails) => {
+      if (emails.length === 0) return;
+      const msId = await createTeamsMeeting(req.user!.id, {
+        id: event.id, title: event.title, description: event.description,
+        startDate: event.startDate, endDate: event.endDate ?? null,
+        location: event.location ? { name: event.location.name, city: event.location.city } : null,
+      }, emails);
+      if (msId) await prisma.event.update({ where: { id: event.id }, data: { msEventId: msId } });
+    }).catch(console.error);
+  }
+
   return res.status(201).json(event);
 });
 
 // Event bearbeiten
 router.put('/:id', authenticate, requireRole('ORGANIZER', 'ADMIN'), async (req: AuthRequest, res: Response) => {
   const id = req.params.id as string;
-  const event = await prisma.event.findUnique({ where: { id } });
+  const event = await prisma.event.findUnique({ where: { id }, include: { location: true } });
   if (!event) return res.status(404).json({ message: 'Event not found' });
   if (event.organizerId !== req.user!.id && req.user!.role !== 'ADMIN') {
     return res.status(403).json({ message: 'Forbidden' });
@@ -169,7 +197,37 @@ router.put('/:id', authenticate, requireRole('ORGANIZER', 'ADMIN'), async (req: 
   const parsed = EventSchema.partial().safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ errors: parsed.error.flatten() });
 
-  const updated = await prisma.event.update({ where: { id }, data: parsed.data });
+  const updated = await prisma.event.update({ where: { id }, data: parsed.data, include: { location: true } });
+
+  // Re-sync Teams meeting when audience or dates change
+  const affectsTeams = parsed.data.audienceType !== undefined || parsed.data.audienceValue !== undefined
+    || parsed.data.startDate !== undefined || parsed.data.endDate !== undefined
+    || parsed.data.title !== undefined;
+
+  if (affectsTeams) {
+    (async () => {
+      // Cancel old meeting if one exists
+      if (event.msEventId && event.source !== 'TEAMS') {
+        await cancelTeamsMeeting(event.organizerId, event.msEventId);
+        await prisma.event.update({ where: { id }, data: { msEventId: null } });
+      }
+      // Create new meeting if still SPECIFIC
+      const newType    = updated.audienceType;
+      const newValue   = updated.audienceValue;
+      if (newType === 'SPECIFIC' && newValue) {
+        const emails = await resolveAttendeeEmails(newValue);
+        if (emails.length > 0) {
+          const msId = await createTeamsMeeting(event.organizerId, {
+            id: updated.id, title: updated.title, description: updated.description,
+            startDate: updated.startDate, endDate: updated.endDate ?? null,
+            location: updated.location ? { name: updated.location.name, city: updated.location.city } : null,
+          }, emails);
+          if (msId) await prisma.event.update({ where: { id }, data: { msEventId: msId } });
+        }
+      }
+    })().catch(console.error);
+  }
+
   return res.json(updated);
 });
 
@@ -181,7 +239,14 @@ router.delete('/:id', authenticate, requireRole('ORGANIZER', 'ADMIN'), async (re
   if (event.organizerId !== req.user!.id && req.user!.role !== 'ADMIN') {
     return res.status(403).json({ message: 'Forbidden' });
   }
+
   await prisma.event.update({ where: { id }, data: { status: 'CANCELLED' } });
+
+  // Cancel the Teams meeting — sends cancellation to all attendees
+  if (event.msEventId && event.source !== 'TEAMS') {
+    cancelTeamsMeeting(event.organizerId, event.msEventId).catch(console.error);
+  }
+
   return res.status(204).send();
 });
 
