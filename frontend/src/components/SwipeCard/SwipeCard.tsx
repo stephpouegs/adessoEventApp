@@ -10,6 +10,7 @@ interface Event {
   startDate: string;
   description?: string;
   imageUrl?: string;
+  source?: string;
   location: { name: string; city: string };
   _count?: { attendances: number };
   maxAttendees?: number;
@@ -150,9 +151,19 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
           {/* Inhalt – feste Höhe unten */}
           <div className="flex-shrink-0 px-4 py-3 space-y-1">
-            <span className="text-xs font-semibold text-[#1A6FBF] uppercase tracking-wide">
-              {EVENT_TYPE_EMOJI[event.type]} {t(`event.type.${event.type}`)}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-[#1A6FBF] uppercase tracking-wide">
+                {EVENT_TYPE_EMOJI[event.type]} {t(`event.type.${event.type}`)}
+              </span>
+              {event.source === 'TEAMS' && (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded bg-[#4B53BC] text-white">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 3H4a1 1 0 00-1 1v16a1 1 0 001 1h16a1 1 0 001-1V4a1 1 0 00-1-1zm-5 10h-2v2h-2v-2H9v-2h2V9h2v2h2v2z"/>
+                  </svg>
+                  Teams
+                </span>
+              )}
+            </div>
             <h2 className="text-base font-bold text-gray-900 leading-tight">{event.title}</h2>
             <div className="flex flex-col gap-0.5 text-sm text-gray-500">
               <span>📅 {new Date(event.startDate).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</span>

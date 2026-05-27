@@ -20,6 +20,7 @@ model User {
   msAccessToken     String?
   msRefreshToken    String?
   msTokenExpiry     DateTime?
+  msSubscriptionId  String?
   createdAt         DateTime  @default(now())
 
   location    Location?    @relation(fields: [locationId], references: [id])
@@ -54,6 +55,8 @@ model Event {
   status        String    @default("ACTIVE")
   audienceType  String    @default("ALL")
   audienceValue String?
+  source        String    @default("MANUAL")
+  msEventId     String?
   createdAt     DateTime  @default(now())
 
   location    Location     @relation(fields: [locationId], references: [id])

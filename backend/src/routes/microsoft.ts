@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import { authenticate, AuthRequest } from '../middleware/auth';
+import { subscribeToCalendar, renewSubscription, importTeamsEvent } from '../services/calendarService';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -79,6 +80,9 @@ router.get('/callback', async (req: Request, res: Response) => {
       },
     });
 
+    // Register webhook subscription so Teams events flow into the feed
+    subscribeToCalendar(userId).catch(console.error);
+
     return res.redirect(`${process.env.FRONTEND_URL}/profile?ms_connected=true`);
   } catch (err) {
     console.error('MS OAuth error:', err);
@@ -86,15 +90,20 @@ router.get('/callback', async (req: Request, res: Response) => {
   }
 });
 
-// Check connection status
+// Check connection status + opportunistically renew subscription
 router.get('/status', authenticate, async (req: AuthRequest, res: Response) => {
   const user = await prisma.user.findUnique({
     where: { id: req.user!.id },
-    select: { msAccessToken: true, msTokenExpiry: true },
+    select: { msAccessToken: true, msTokenExpiry: true, msSubscriptionId: true },
   });
 
   const connected = !!user?.msAccessToken;
   const expired = connected && user?.msTokenExpiry ? user.msTokenExpiry < new Date() : false;
+
+  // Renew subscription in background if connected
+  if (connected && user?.msSubscriptionId) {
+    renewSubscription(req.user!.id).catch(console.error);
+  }
 
   return res.json({ connected, expired });
 });
@@ -103,9 +112,31 @@ router.get('/status', authenticate, async (req: AuthRequest, res: Response) => {
 router.delete('/disconnect', authenticate, async (req: AuthRequest, res: Response) => {
   await prisma.user.update({
     where: { id: req.user!.id },
-    data: { msAccessToken: null, msRefreshToken: null, msTokenExpiry: null },
+    data: { msAccessToken: null, msRefreshToken: null, msTokenExpiry: null, msSubscriptionId: null },
   });
   return res.json({ message: 'Microsoft account disconnected' });
+});
+
+// Graph webhook validation (GET with validationToken query param)
+router.get('/webhook', (req: Request, res: Response) => {
+  const validationToken = req.query.validationToken as string | undefined;
+  if (validationToken) {
+    return res.status(200).contentType('text/plain').send(validationToken);
+  }
+  return res.sendStatus(400);
+});
+
+// Graph webhook notifications (POST — must respond 202 immediately)
+router.post('/webhook', (req: Request, res: Response) => {
+  res.sendStatus(202); // acknowledge before any async work
+
+  const notifications: any[] = req.body?.value ?? [];
+  for (const n of notifications) {
+    const { subscriptionId, changeType, resourceData } = n;
+    if ((changeType === 'created' || changeType === 'updated') && resourceData?.id) {
+      importTeamsEvent(subscriptionId, resourceData.id as string).catch(console.error);
+    }
+  }
 });
 
 export default router;

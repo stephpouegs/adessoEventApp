@@ -35,7 +35,8 @@ function isVisibleToUser(event: any, user: any): boolean {
     case 'SPECIFIC': {
       if (!event.audienceValue) return false;
       const targets: string[] = JSON.parse(event.audienceValue);
-      return targets.includes(user?.id) || targets.includes(user?.email);
+      const userEmail = (user?.email as string)?.toLowerCase() ?? '';
+      return targets.includes(user?.id) || targets.some((t) => t.toLowerCase() === userEmail);
     }
     default: return true;
   }
